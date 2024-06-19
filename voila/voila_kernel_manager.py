@@ -280,12 +280,16 @@ def voila_kernel_manager_factory(
                     task.add_done_callback(task_counter)
 
             async def restart_kernel(self, kernel_id: str, **kwargs) -> None:
+                print('voila kwargs')
+                print(kwargs)
                 await ensure_async(super().restart_kernel(kernel_id, **kwargs))
                 notebook_name = self._get_notebook_from_kernel(kernel_id)
                 if notebook_name is not None:
                     await self._initialize(notebook_name, kernel_id, **kwargs)
 
             async def shutdown_kernel(self, kernel_id: str, *args, **kwargs):
+                print('voila kwargs')
+                print(kwargs)
                 for pool in self._pools.values():
                     for i, f in enumerate(pool):
                         if f.done() and f.result().get("kernel_id") == kernel_id:
@@ -337,9 +341,14 @@ def voila_kernel_manager_factory(
                 await renderer.initialize()
                 kernel_name = renderer.notebook.metadata.kernelspec.name
 
+                custom_kernel_specs = {}
+                if renderer.notebook.metadata.kernelspec.customKernelSpecs is None:
+                    custom_kernel_specs = renderer.notebook.metadata.kernelspec.customKernelSpecs
+                print('_initializevoila kwargs')
+                print(kwargs)
                 if kernel_id is None:
                     kernel_id = await super().start_kernel(
-                        kernel_name=kernel_name, **kwargs
+                        kernel_name=kernel_name, custom_kernel_specs=custom_kernel_specs, **kwargs
                     )
 
                 if renderer.notebook_path not in self.notebook_data:
